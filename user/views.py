@@ -11,6 +11,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from project.models import *
+from project.serializers import *
 
 def createToken(userId, duration, role=None):
     payload = {
@@ -33,20 +35,20 @@ def verifyEmailResult(request):
 def isLogin(request):
     token =request.META.get('HTTP_AUTHORIZATION')
     if not token:
-        raise AuthenticationFailed('Authentication credentials were not provided.')
+        raise AuthenticationFailed({"success": False, "message": 'Authentication credentials were not provided.'})
     try:
         payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     except jwt.ExpiredSignatureError:
-        raise AuthenticationFailed('Token is Expired')
+        raise AuthenticationFailed({"success": False , "message": 'Token is Expired'})
 
     except jwt.exceptions.DecodeError:
-        raise AuthenticationFailed('Invalid Token')
+        raise AuthenticationFailed({"success": False , "message":'Invalid Token'})
 
     user = myUser.objects.filter(id=payload['id']).first()
     if not user:
-        raise AuthenticationFailed('User Account not found!')
+        raise AuthenticationFailed({"success": False , "message": 'User Account not found!'})
     elif payload['role'] !="login":
-        raise AuthenticationFailed("Invalid Token")
+        raise AuthenticationFailed({"success": False , "message": "Invalid Token"})
 
     return user
 
@@ -55,10 +57,10 @@ class UserListCreateAPIView(generics.ListCreateAPIView):
     queryset = myUser.objects.all()
     serializer_class = UserSerializer
 
-class UserView(APIView):
+class UserRegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=False):
             user = serializer.save()
             token = createToken(userId= user.id,duration=24*60, role="emailVarify")
             current_site = get_current_site(request).domain
@@ -69,9 +71,10 @@ class UserView(APIView):
                 ' Use the link below to verify your email \n' + absurl
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Verify your email'}
-            return Response({'success': True,'token':token, 'msg':'Registration Successfully, View Email Inbox To varify the Email'}, status=status.HTTP_201_CREATED)
             Util.send_email(data)
+            return Response({'success': True, 'msg':'Registration Successfully, View Email Inbox To varify the Email'}, status=status.HTTP_201_CREATED)
         return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserLoginView(APIView):
     serializer_class = UserLoginSerializer
@@ -113,7 +116,7 @@ class VarifyEmail(APIView):
             if not user.is_verifications:
                 user.is_verifications = True
                 user.save()
-                return HttpResponseRedirect(redirect_to='/users/verifyEmailResult/?varify=Email is varified Successfully', status= status.HTTP_200_OK)
+                return HttpResponseRedirect(redirect_to='/users/verifyEmailResult/?varify=Email is varified Successfully')
             else:
                 return HttpResponseRedirect(redirect_to='/users/verifyEmailResult/?varify=Your Email is alreay varified')
 
@@ -127,3 +130,15 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = myUser.objects.all()
     serializer_class = UserSerializer
 
+class UserProfileView(APIView):
+    def get(self, request):
+        user = isLogin(request)
+        userSerializer = UserSerializer(user)
+        return Response({"success": True, "data": userSerializer.data, "message": "user profile data retrieved"})
+
+class userProjectsView(APIView):
+    def get(self, request):
+        user = isLogin(request)
+        userProjects = Project.objects.filter(user=user)
+        serializer = ProjectSerializer(userProjects, many=True)
+        return Response({"success": True, "data": serializer.data, "message": "All Your Projects are retrieved"})

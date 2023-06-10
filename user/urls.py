@@ -21,11 +21,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.UserListCreateAPIView.as_view(), name='user-list'),
+    path('/', views.UserListCreateAPIView.as_view(), name='user-list'),
+    path('Projects/', views.userProjectsView.as_view(), name='project-list'),
     path('<int:pk>/', views.UserRetrieveUpdateDestroyAPIView.as_view(), name='user-detail'),
    # path('users/<int:user_id>/projects/', views.UserProjectListAPIView.as_view(), name='user-project-list'),
-    path('register/', views.UserView.as_view(), name='register'),
+    path('register/', views.UserRegisterView.as_view(), name='register'),
     path('login/', views.UserLoginView.as_view(), name='login'),
+    path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('email-verify/', views.VarifyEmail.as_view(), name="email-verify"),
     path('verifyEmailResult/', views.verifyEmailResult, name="email-verify-result"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

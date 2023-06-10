@@ -14,10 +14,8 @@ class Project(models.Model):
     user = models.ForeignKey(myUser, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     details = models.TextField()
-    category = models.ForeignKey('Category', on_delete=models.PROTECT, default=1)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
     total_target = models.DecimalField(max_digits=10, decimal_places=2)
-    pictures = models.ManyToManyField('ProjectPicture', blank=True,related_name='project_pictures')
-    tags = models.ManyToManyField('Tag', blank=True, related_name='project_tags')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
@@ -27,7 +25,7 @@ class Project(models.Model):
 class Tag(models.Model):
     name = models.CharField(max_length=50)
     project = models.ForeignKey(
-        'Project',
+        Project,
         related_name='project_tages',
         on_delete=models.CASCADE
     )
@@ -38,7 +36,7 @@ class Tag(models.Model):
 class ProjectPicture(models.Model):
     image = models.ImageField(upload_to='project_pictures')
     project = models.ForeignKey(
-        'Project',
+        Project,
         related_name='project_pictures',
         on_delete=models.CASCADE
     )

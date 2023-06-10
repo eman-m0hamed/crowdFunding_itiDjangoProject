@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.ProjectListCreateAPIView.as_view(), name='project-list'),
+    path('add/', views.ProjectsView.as_view(), name='project-list'),
     path('<int:pk>/', views.ProjectRetrieveUpdateDestroyAPIView.as_view(), name='project-detail'),
     path('project-pictures/', views.ProjectPictureListCreateAPIView.as_view(), name='project-picture-list'),
     path('project-pictures/<int:pk>/', views.ProjectPictureRetrieveUpdateDestroyAPIView.as_view(), name='project-picture-detail'),
