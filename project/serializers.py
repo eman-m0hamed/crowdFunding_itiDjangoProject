@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Project, Category, ProjectPicture, Tag, Comments
+
+from user.serializers import UserSerializer
+from .models import Donations, Project, Category, ProjectPicture, Tag, Comments
 from rest_framework import serializers
 
 
@@ -33,6 +35,22 @@ class TagSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
+        fields = "__all__"
+
+
+class AddDonationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Donations
+        fields = "__all__"
+
+
+
+
+class DonationSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    project = ProjectSerializer()
+    class Meta:
+        model = Donations
         fields = "__all__"
 
 

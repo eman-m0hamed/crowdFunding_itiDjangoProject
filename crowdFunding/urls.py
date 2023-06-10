@@ -24,8 +24,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
      path('users/', include('user.urls')),
-     path('projects/', include('project.urls')),
-     path('categories/', CategoryListCreateAPIView.as_view(), name='category-list'),
-    path('categories/<int:pk>/', CategoryRetrieveUpdateDestroyAPIView.as_view(), name='category-detail'),
+     path('projects/', include('project.urls'))
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

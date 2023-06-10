@@ -21,13 +21,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.ProjectListCreateAPIView.as_view(), name='project-list'),
-    path('add/', views.ProjectsView.as_view(), name='project-list'),
-    path('<int:pk>/', views.ProjectRetrieveUpdateDestroyAPIView.as_view(), name='project-detail'),
+    path('all/', views.ProjectListCreateAPIView.as_view(), name='projects-list'),
+    path('', views.ProjectsView.as_view(), name='user-projects'),
+    path('<int:id>/', views.DeleteProject.as_view(), name='delete-user-projects'),
+    path('<int:id>/Donations/', views.DonationsView.as_view(), name='donations'),
+    path('<int:id>/comments', views.ProjectComments.as_view(), name='project-comments'),
     path('project-pictures/', views.ProjectPictureListCreateAPIView.as_view(), name='project-picture-list'),
-    path('project-pictures/<int:pk>/', views.ProjectPictureRetrieveUpdateDestroyAPIView.as_view(), name='project-picture-detail'),
-    path('tags/', views.TagListCreateAPIView.as_view(), name='tag-list'),
-    path('tags/<int:pk>/', views.TagRetrieveUpdateDestroyAPIView.as_view(), name='tag-detail'),
+    path('project-pictures/<int:id>/', views.ProjectPictureRetrieveUpdateDestroyAPIView.as_view(), name='project-picture-detail'),
+
     # path('users/<int:user_id>/projects/', views.UserProjectListAPIView.as_view(), name='user-project-list'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -135,6 +135,11 @@ class UserProfileView(APIView):
         user = isLogin(request)
         userSerializer = UserSerializer(user)
         return Response({"success": True, "data": userSerializer.data, "message": "user profile data retrieved"})
+    def delete(self, request):
+        user = isLogin(request)
+        user.delete()
+        return Response({"message":"deleted successfully", "success":True},status=status.HTTP_204_NO_CONTENT)
+
 
 class userProjectsView(APIView):
     def get(self, request):
@@ -142,3 +147,5 @@ class userProjectsView(APIView):
         userProjects = Project.objects.filter(user=user)
         serializer = ProjectSerializer(userProjects, many=True)
         return Response({"success": True, "data": serializer.data, "message": "All Your Projects are retrieved"})
+
+

@@ -15,7 +15,7 @@ class Project(models.Model):
     title = models.CharField(max_length=100)
     details = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    total_target = models.DecimalField(max_digits=10, decimal_places=2)
+    total_target = models.IntegerField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
@@ -48,4 +48,13 @@ class Comments(models.Model):
 
     def __str__(self):
         return (f"{self.user.first_name} {self.user.last_name} on {self.project.title}")
+
+
+class Donations(models.Model):
+    money = models.IntegerField()
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(myUser, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return (f"{self.user} Donate to {self.project}")
 

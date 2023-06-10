@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('/', views.UserListCreateAPIView.as_view(), name='user-list'),
-    path('Projects/', views.userProjectsView.as_view(), name='project-list'),
+    path('projects/', views.userProjectsView.as_view(), name='project-list'),
     path('<int:pk>/', views.UserRetrieveUpdateDestroyAPIView.as_view(), name='user-detail'),
    # path('users/<int:user_id>/projects/', views.UserProjectListAPIView.as_view(), name='user-project-list'),
     path('register/', views.UserRegisterView.as_view(), name='register'),

@@ -8,7 +8,7 @@ from rest_framework.exceptions import AuthenticationFailed
 import jwt, datetime
 from user.models import *
 from user.views import isLogin
-
+from django.db.models import Sum
 
 def add_project_images(request, images, project):
     user=isLogin(request)
@@ -71,31 +71,10 @@ class ProjectsView(APIView):
         else:
             return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    # def get(self,request):
-    #    user = isLogin(request)
-    #    all= Project.objects.filter(user=user)
-    #    serializer= ProjectSerializer(all, many=True)
-    #    return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class ProjectListCreateAPIView(generics.ListCreateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-
-
-class ProjectRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-
-
-class CategoryListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-class CategoryRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
 
 
 class ProjectPictureListCreateAPIView(generics.ListCreateAPIView):
@@ -107,23 +86,66 @@ class ProjectPictureRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyA
     queryset = ProjectPicture.objects.all()
     serializer_class = ProjectPictureSerializer
 
+class DeleteProject(APIView):
+    def delete(self, request, id):
+        user = isLogin(request)
+        project = Project.objects.filter(id=id).first()
+        if project:
+            if project.user != user:
+                return Response({"success": False, "message": "You don't have access"}, status=status.HTTP_403_FORBIDDEN)
+            allDonations = Donations.objects.filter(project=id).aggregate(Sum('money'))['money__sum'] or 0
+            if allDonations > project.total_target*0.25:
+                return Response({"success": False, "message": "You can't delete this project because project target exceeded '25%' of target"}, status=status.HTTP_400_BAD_REQUEST)
 
-class TagListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-
-
-class TagRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-
+            project.delete()
+            return Response({"success": True, "message": "Project Deleted Successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
 
 class ProjectComments(APIView):
-    def post(self, request):
+    def post(self, request, id):
+        user = isLogin(request)
+
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid(raise_exception=False):
             serializer.save()
             return Response({"success": True,"message": "comment created successfully","date": serializer.data}, status=status.HTTP_200_OK)
         else:
             return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DonationsView(APIView):
+    def post(self, request, id):
+        user = isLogin(request)
+        project = Project.objects.filter(id=id).first()
+        if project:
+            donation_data = request.data.copy()
+            donation_data['user'] = user.id
+            donation_data['project']=id
+            serializer = AddDonationSerializer(data=donation_data)
+            if serializer.is_valid(raise_exception=False):
+                allDonations = Donations.objects.filter(project=id).aggregate(Sum('money'))['money__sum'] or 0
+                if allDonations < project.total_target:
+                    serializer.save()
+                    return Response({"success": True,"message": "Donation Send Successfully","date": serializer.data}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"success": False,"message": "project already arrived to its target"}, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"success": False,"message": "project not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, id):
+        user = isLogin(request)
+        project = Project.objects.filter(id=id).first()
+        if project.user != user:
+             return Response({"success": False, "message": "You don't have access"}, status=status.HTTP_403_FORBIDDEN)
+        if project:
+            projectDonations = Donations.objects.filter(project=id);
+            selializer = DonationSerializer(projectDonations, many= True)
+            return Response({"success": True, "data": selializer.data, "message": "all donations of project retrieved"})
+
+        else:
+            return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
 
