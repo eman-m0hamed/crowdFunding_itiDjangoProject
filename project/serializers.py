@@ -22,17 +22,24 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ['id', 'name', 'project']
 
+class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = Comments
+        fields = "__all__"
+
+
 
 class ProjectSerializer(serializers.ModelSerializer):
 
     pictures = ProjectPictureSerializer(many=True, read_only=True, allow_null=True, required=False)
     category = CategorySerializer(read_only=True)
-    tag = TagSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True, allow_null=True)
     user = UserSerializer(read_only=True)
-
+    comments = CommentSerializer(many = True, allow_null=True)
     class Meta:
         model = Project
-        fields = ['id', 'user', 'title', 'details', 'tag', 'category', 'total_target', 'pictures', 'start_time', 'end_time']
+        fields = ['id', 'user', 'title', 'details', 'tags', 'category', 'total_target', 'pictures', 'start_time', 'end_time', 'comments']
 
 
 class AddProjectSerialzer(serializers.ModelSerializer):
@@ -42,11 +49,6 @@ class AddProjectSerialzer(serializers.ModelSerializer):
         fields = ['id', 'user', 'title', 'details', 'tag', 'category', 'total_target', 'pictures', 'start_time', 'end_time']
 
 
-
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comments
-        fields = "__all__"
 
 
 class AddDonationSerializer(serializers.ModelSerializer):
@@ -67,7 +69,11 @@ class DonationSerializer(serializers.ModelSerializer):
 
 
 
-
+class CategoryListSerializer(serializers.ModelSerializer):
+    project = ProjectSerializer()
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'project']
 
 
 

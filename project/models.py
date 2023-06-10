@@ -18,7 +18,7 @@ class Project(models.Model):
     total_target = models.IntegerField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    # pictures = models.ManyToOneRelToManyField('ProjectPicture', blank=True,related_name='project_pictures')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title

@@ -26,9 +26,8 @@ urlpatterns = [
     path('<int:id>/', views.ProjectDetails.as_view(), name='ProjectDetails'),
     path('<int:id>/Donations/', views.DonationsView.as_view(), name='donations'),
     path('<int:id>/comments', views.ProjectComments.as_view(), name='project-comments'),
+    path('lastFiveProjects/', views.LastFiveProjects.as_view(), name='lastFiveProjects'),
 
-
-    # path('users/<int:user_id>/projects/', views.UserProjectListAPIView.as_view(), name='user-project-list'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

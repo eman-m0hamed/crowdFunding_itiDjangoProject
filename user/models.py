@@ -21,7 +21,7 @@ class myUser(AbstractBaseUser):
     last_name = models.CharField(max_length=50)
     mobile_phone = models.CharField(max_length=11,
                     validators=[RegexValidator(r'^01[0-2,5]{1}[0-9]{8}$')])
-    profile_picture = models.ImageField(upload_to='profile_pictures')
+    profile_picture = models.ImageField(upload_to='profile_pictures', null=True)
     is_active = models.BooleanField(default=True)
     is_verifications = models.BooleanField(default=False)
     is_authenticated = models.BooleanField(null=True)

@@ -97,11 +97,16 @@ class ProjectDetails(APIView):
         user = isLogin(request)
         project = Project.objects.filter(id=id).first()
         images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
-
+        projectComments = Comments.objects.filter(project = project)
+        comments = CommentSerializer(projectComments, many=True).data
+        projectTags = Tag.objects.filter(project = project)
+        tags = TagSerializer(projectTags, many=True).data
         if project:
             serializer = ProjectSerializer(project)
             ProjectDetails = serializer.data
             ProjectDetails['pictures'] = images
+            ProjectDetails['comments'] = comments
+            ProjectDetails['tags'] = tags
             return Response({"success": True, "data": ProjectDetails, "message": "project data is retrieved"})
         else:
             return Response({"success": False, "message": "projectnot found"})
@@ -126,13 +131,29 @@ class ProjectDetails(APIView):
 class ProjectComments(APIView):
     def post(self, request, id):
         user = isLogin(request)
-
-        serializer = CommentSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=False):
-            serializer.save()
-            return Response({"success": True,"message": "comment created successfully","date": serializer.data}, status=status.HTTP_200_OK)
+        project = Project.objects.filter(id=id).first()
+        if project:
+            comment_data = request.data.copy()
+            comment_data['user'] = user.id
+            comment_data['project'] = id
+            serializer = CommentSerializer(data=comment_data)
+            if serializer.is_valid(raise_exception=False):
+                serializer.save()
+                return Response({"success": True,"message": "comment created successfully","date": serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"success": False, "message": "projectnot found"})
+
+    def get(self, request, id):
+        user = isLogin(request)
+        project = Project.objects.filter(id=id).first()
+        if project:
+            projectComments = Comments.objects.filter(project=id)
+            serializer = CommentSerializer(projectComments, many=True)
+            return Response({"success": True,"message": "all comments of project retrieved","date": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"success": False, "message": "project not found"})
 
 
 class DonationsView(APIView):
@@ -173,3 +194,37 @@ class DonationsView(APIView):
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+
+class CategoryProjects(APIView):
+    def get(self, request, id):
+        user = isLogin(request)
+        category = Category.objects.filter(id=id).first()
+
+        if category:
+            categorySerializer = CategorySerializer(category)
+            categoryProjects = Project.objects.filter(category=category)
+            projectSerializer = ProjectSerializer(categoryProjects, many=True)
+            serialized_data = categorySerializer.data
+            serialized_data['project'] = projectSerializer.data
+            return Response({"success": True, "data": serialized_data,"message": "category data retrieved"})
+        else:
+            return Response({"success": False, "message": "category not found"})
+
+
+class LastFiveProjects(APIView):
+    def get(self, request):
+        user= isLogin(request)
+
+        projects= Project.objects.all().order_by('-created_at')[:5]
+        serializer = ProjectSerializer(projects, many=True);
+        images_list = []
+        for project in projects:
+            images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
+            images_list.append(images)
+
+        # add the list of image URLs to the serializer data
+        serializer_data = serializer.data
+        for i, project_data in enumerate(serializer_data):
+            project_data['pictures'] = images_list[i]
+        return Response({"success": True, "data": serializer_data, "message": "Last 5 Projects are retrieved"})

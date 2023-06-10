@@ -134,11 +134,20 @@ class UserProfileView(APIView):
         user = isLogin(request)
         userSerializer = UserSerializer(user)
         return Response({"success": True, "data": userSerializer.data, "message": "user profile data retrieved"})
+
     def delete(self, request):
         user = isLogin(request)
         user.delete()
         return Response({"message":"deleted successfully", "success":True},status=status.HTTP_204_NO_CONTENT)
 
+    def put(self, request):
+        user = isLogin(request)
+        serializer = UserProfileSerializer(data=request.data, instance=user)
+        if serializer.is_valid(raise_exception=False):
+            updated = serializer.save()
+            return Response({"success": True, "data": serializer.data, "message": "profile updated successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class userProjectsView(APIView):
     def get(self, request):

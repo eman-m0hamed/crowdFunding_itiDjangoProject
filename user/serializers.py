@@ -20,6 +20,15 @@ class UserSerializer(serializers.ModelSerializer):
         user = myUser.objects.create_user(password=password, **validated_data)
         return user
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = myUser
+        fields = ['id', 'first_name', 'last_name', 'mobile_phone', 'profile_picture', 'country', "Birth_date"]
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
+        
+
 class EmailVerificationSerializer(serializers.ModelSerializer):
     token = serializers.CharField(max_length=555)
 
