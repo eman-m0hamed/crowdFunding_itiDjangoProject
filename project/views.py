@@ -6,11 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 import jwt, datetime
-from .utils import Util
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from user.models import *
+from user.views import isLogin
 
 
 def add_project_images(request, images, project):
@@ -76,10 +73,6 @@ class ProjectsView(APIView):
        serializer= ProjectSerializer(all, many=True)
        return Response(serializer.data, status=status.HTTP_200_OK)
 
-class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = myUser.objects.all()
-    serializer_class = UserSerializer
-
 
 class ProjectListCreateAPIView(generics.ListCreateAPIView):
     queryset = Project.objects.all()
@@ -119,7 +112,6 @@ class TagListCreateAPIView(generics.ListCreateAPIView):
 class TagRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
 
 
 class ProjectComments(APIView):

@@ -21,14 +21,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('users/', views.UserListCreateAPIView.as_view(), name='user-list'),
-    path('users/<int:pk>/', views.UserRetrieveUpdateDestroyAPIView.as_view(), name='user-detail'),
+    path('', views.UserListCreateAPIView.as_view(), name='user-list'),
+    path('<int:pk>/', views.UserRetrieveUpdateDestroyAPIView.as_view(), name='user-detail'),
    # path('users/<int:user_id>/projects/', views.UserProjectListAPIView.as_view(), name='user-project-list'),
-    path('users/register/', views.UserView.as_view(), name='register'),
-    path('users/login/', views.UserLoginView.as_view(), name='login'),
+    path('register/', views.UserView.as_view(), name='register'),
+    path('login/', views.UserLoginView.as_view(), name='login'),
     path('email-verify/', views.VarifyEmail.as_view(), name="email-verify"),
-    path('users/verifyEmailResult/', views.verifyEmailResult, name="email-verify-result"),
+    path('verifyEmailResult/', views.verifyEmailResult, name="email-verify-result"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

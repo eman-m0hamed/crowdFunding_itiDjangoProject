@@ -17,12 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from project.views import *
-
+from django.conf import settings
+from django.conf.urls.static import static
 urlpatterns = [
+    path('', admin.site.urls),
     path('admin/', admin.site.urls),
-     path('users/', include('users.urls')),
-     path('projects/', include('projects.urls')),
+     path('users/', include('user.urls')),
+     path('projects/', include('project.urls')),
      path('categories/', CategoryListCreateAPIView.as_view(), name='category-list'),
     path('categories/<int:pk>/', CategoryRetrieveUpdateDestroyAPIView.as_view(), name='category-detail'),
 
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
