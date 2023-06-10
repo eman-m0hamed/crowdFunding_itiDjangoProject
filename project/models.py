@@ -18,9 +18,11 @@ class Project(models.Model):
     total_target = models.IntegerField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    # pictures = models.ManyToOneRelToManyField('ProjectPicture', blank=True,related_name='project_pictures')
 
     def __str__(self):
         return self.title
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=50)
@@ -35,11 +37,8 @@ class Tag(models.Model):
 
 class ProjectPicture(models.Model):
     image = models.ImageField(upload_to='project_pictures')
-    project = models.ForeignKey(
-        Project,
-        related_name='project_pictures',
-        on_delete=models.CASCADE
-    )
+    project = models.ForeignKey(Project, related_name='project_pictures', on_delete=models.CASCADE)
+
 
 class Comments(models.Model):
     comment = models.TextField()

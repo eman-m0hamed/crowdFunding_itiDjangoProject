@@ -1,14 +1,14 @@
 from rest_framework import generics
-from .models import Project, Category, ProjectPicture, Tag
+from .models import Project, Category
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed
-import jwt, datetime
 from user.models import *
 from user.views import isLogin
 from django.db.models import Sum
+from django.utils import timezone
+
 
 def add_project_images(request, images, project):
     user=isLogin(request)
@@ -43,7 +43,6 @@ def add_project_tags(request, tags, project):
 class ProjectsView(APIView):
     def post(self, request, format=None):
         user=isLogin(request)
-
         project_data = request.data.copy()
         project_data['user'] = user.id
         project_data['category'] = Category.objects.filter(id=request.data['category']).first().id
@@ -59,7 +58,7 @@ class ProjectsView(APIView):
         if not request.POST.getlist('tags'):
             return Response({"success": False, "errors": {"tags": "This field is required"}}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = ProjectSerializer(data=project_data)
+        serializer = AddProjectSerialzer(data=project_data)
         if serializer.is_valid(raise_exception=False):
             project = serializer.save()
             # print(project.id)
@@ -71,22 +70,43 @@ class ProjectsView(APIView):
         else:
             return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request):
+        user = isLogin(request)
+        allProjects = Project.objects.all()
+        serializer = ProjectSerializer(allProjects, many=True)
+        images_list = []
+        for project in allProjects:
+            images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
+            images_list.append(images)
+
+        # add the list of image URLs to the serializer data
+        serializer_data = serializer.data
+        for i, project_data in enumerate(serializer_data):
+            project_data['pictures'] = images_list[i]
+        return Response({"success": True, "data": serializer_data, "message": "All Your Projects are retrieved"})
+
+
 
 class ProjectListCreateAPIView(generics.ListCreateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
 
-class ProjectPictureListCreateAPIView(generics.ListCreateAPIView):
-    queryset = ProjectPicture.objects.all()
-    serializer_class = ProjectPictureSerializer
+class ProjectDetails(APIView):
+    def get(self, request, id):
+        user = isLogin(request)
+        project = Project.objects.filter(id=id).first()
+        images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
+
+        if project:
+            serializer = ProjectSerializer(project)
+            ProjectDetails = serializer.data
+            ProjectDetails['pictures'] = images
+            return Response({"success": True, "data": ProjectDetails, "message": "project data is retrieved"})
+        else:
+            return Response({"success": False, "message": "projectnot found"})
 
 
-class ProjectPictureRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = ProjectPicture.objects.all()
-    serializer_class = ProjectPictureSerializer
-
-class DeleteProject(APIView):
     def delete(self, request, id):
         user = isLogin(request)
         project = Project.objects.filter(id=id).first()
@@ -101,6 +121,7 @@ class DeleteProject(APIView):
             return Response({"success": True, "message": "Project Deleted Successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ProjectComments(APIView):
     def post(self, request, id):
@@ -125,11 +146,11 @@ class DonationsView(APIView):
             serializer = AddDonationSerializer(data=donation_data)
             if serializer.is_valid(raise_exception=False):
                 allDonations = Donations.objects.filter(project=id).aggregate(Sum('money'))['money__sum'] or 0
-                if allDonations < project.total_target:
+                if allDonations >= project.total_target or timezone.now() > project.end_time:
+                    return Response({"success": False,"message": "project already arrived to its target"}, status=status.HTTP_400_BAD_REQUEST)
+                else:
                     serializer.save()
                     return Response({"success": True,"message": "Donation Send Successfully","date": serializer.data}, status=status.HTTP_200_OK)
-                else:
-                    return Response({"success": False,"message": "project already arrived to its target"}, status=status.HTTP_400_BAD_REQUEST)
 
             else:
                 return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -149,3 +170,6 @@ class DonationsView(APIView):
         else:
             return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
 
+class CategoryListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer

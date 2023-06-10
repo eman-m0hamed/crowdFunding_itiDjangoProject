@@ -13,7 +13,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from project.models import *
 from project.serializers import *
-
 def createToken(userId, duration, role=None):
     payload = {
     'id': userId,
@@ -99,7 +98,7 @@ class UserLoginView(APIView):
         if not user.is_verifications:
             return Response({"success": False, "message": "please verify your email"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        token = createToken(userId=user.id, duration=60, role="login")
+        token = createToken(userId=user.id, duration=60*4, role="login")
         return Response({'login': True, 'token': token}, status=status.HTTP_200_OK)
 
 
@@ -146,6 +145,15 @@ class userProjectsView(APIView):
         user = isLogin(request)
         userProjects = Project.objects.filter(user=user)
         serializer = ProjectSerializer(userProjects, many=True)
-        return Response({"success": True, "data": serializer.data, "message": "All Your Projects are retrieved"})
+        images_list = []
+        for project in userProjects:
+            images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
+            images_list.append(images)
+
+        # add the list of image URLs to the serializer data
+        serializer_data = serializer.data
+        for i, project_data in enumerate(serializer_data):
+            project_data['pictures'] = images_list[i]
+        return Response({"success": True, "data": serializer_data, "message": "All Your Projects are retrieved"})
 
 
