@@ -42,9 +42,10 @@ class ProjectSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True, allow_null=True)
     user = UserSerializer(read_only=True)
     comments = CommentSerializer(many = True, allow_null=True)
+    
     class Meta:
         model = Project
-        fields = ['id', 'user', 'title', 'details', 'tags', 'category', 'total_target', 'pictures', 'start_time', 'end_time', 'comments']
+        fields = ['id', 'user', 'title', 'details', 'tags', 'category', 'total_target', 'pictures', 'start_time', 'end_time', 'comments' ,'donation' ]
 
 
 class AddProjectSerialzer(serializers.ModelSerializer):

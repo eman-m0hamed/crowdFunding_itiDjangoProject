@@ -171,6 +171,8 @@ class DonationsView(APIView):
                     return Response({"success": False,"message": "project already arrived to its target"}, status=status.HTTP_400_BAD_REQUEST)
                 else:
                     serializer.save()
+                    project.donation=allDonations+int(donation_data['money'])
+                    project.save()
                     return Response({"success": True,"message": "Donation Send Successfully","date": serializer.data}, status=status.HTTP_200_OK)
 
             else:

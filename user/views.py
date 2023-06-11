@@ -135,7 +135,7 @@ class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 class UserProfileView(APIView):
     def get(self, request):
         user = isLogin(request)
-        userSerializer = UserSerializer(user)
+        userSerializer = UserProfileSerializer(user)
         return Response({"success": True, "data": userSerializer.data, "message": "user profile data retrieved"})
 
     def delete(self, request):
