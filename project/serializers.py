@@ -27,6 +27,11 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = "__all__"
+        
+class AddCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comments
+        fields = "__all__"
 
 
 
@@ -44,9 +49,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class AddProjectSerialzer(serializers.ModelSerializer):
     pictures = ProjectPictureSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True, allow_null=True)
+
     class Meta:
         model = Project
-        fields = ['id', 'user', 'title', 'details', 'tag', 'category', 'total_target', 'pictures', 'start_time', 'end_time']
+        fields = ['id', 'user', 'title', 'details', 'tags', 'category', 'total_target', 'pictures', 'start_time', 'end_time']
 
 
 

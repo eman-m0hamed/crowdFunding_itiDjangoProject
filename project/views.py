@@ -136,7 +136,7 @@ class ProjectComments(APIView):
             comment_data = request.data.copy()
             comment_data['user'] = user.id
             comment_data['project'] = id
-            serializer = CommentSerializer(data=comment_data)
+            serializer = AddCommentSerializer(data=comment_data)
             if serializer.is_valid(raise_exception=False):
                 serializer.save()
                 return Response({"success": True,"message": "comment created successfully","date": serializer.data}, status=status.HTTP_200_OK)
