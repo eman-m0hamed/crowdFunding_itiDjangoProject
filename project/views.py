@@ -45,7 +45,10 @@ class ProjectsView(APIView):
         user=isLogin(request)
         project_data = request.data.copy()
         project_data['user'] = user.id
-        project_data['category'] = Category.objects.filter(id=request.data['category']).first().id
+        cat = Category.objects.filter(id=request.data['category']).first()
+        if not cat:
+            return Response({"success": False, "errors": {"category":"category doesn't exist"}}, status=status.HTTP_400_BAD_REQUEST)
+        project_data['category'] = cat.id
         if not request.FILES.getlist('pictures'):
             serializer = ({
             "success": False,
