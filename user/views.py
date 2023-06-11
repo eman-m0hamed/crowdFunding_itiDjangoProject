@@ -157,6 +157,8 @@ class userProjectsView(APIView):
         user = isLogin(request)
         userProjects = Project.objects.filter(user=user)
         serializer = ProjectSerializer(userProjects, many=True)
+
+
         images_list = []
         for project in userProjects:
             images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
@@ -165,4 +167,13 @@ class userProjectsView(APIView):
         serializer_data = serializer.data
         for i, project_data in enumerate(serializer_data):
             project_data['pictures'] = images_list[i]
+            projectComments = Comments.objects.filter(project = project_data['id'])
+            projectTags = Tag.objects.filter(project = project_data['id'])
+            projectReports = ProjectReport.objects.filter(project=project_data['id'])
+            comments = CommentSerializer(projectComments, many=True).data
+            tags = TagSerializer(projectTags, many=True).data
+            reports = ReportProjectSerializer(projectReports, many=True).data
+            project_data['comments'] = comments
+            project_data['tags'] = tags
+            project_data['reports'] = reports
         return Response({"success": True, "data": serializer_data, "message": "All Your Projects are retrieved"})

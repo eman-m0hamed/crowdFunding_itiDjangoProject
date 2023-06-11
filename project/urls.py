@@ -25,9 +25,10 @@ urlpatterns = [
     path('', views.ProjectsView.as_view(), name='projects'),
     path('<int:id>/', views.ProjectDetails.as_view(), name='ProjectDetails'),
     path('<int:id>/Donations/', views.DonationsView.as_view(), name='donations'),
-    path('<int:id>/comments', views.ProjectComments.as_view(), name='project-comments'),
-    path('lastFiveProjects/', views.LastFiveProjects.as_view(), name='lastFiveProjects'),
-
+    path('<int:id>/comments/', views.ProjectComments.as_view(), name='project-comments'),
+    path('lastFiveProjects/', views.LastFiveProjects.as_view(), name='last-five-projects'),
+    path('<int:id>/reports/', views.ReportProject.as_view(), name='project-report'),
+    path('<int:projectId>/comments/<int:id>/reports/', views.ReportComment.as_view(), name='comment-report'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

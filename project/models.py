@@ -58,3 +58,20 @@ class Donations(models.Model):
     def __str__(self):
         return (f"{self.user} Donate to {self.project}")
 
+
+class ProjectReport(models.Model):
+    reason = models.TextField()
+    user = models.ForeignKey(myUser, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f" {self.user.first_name} {self.user.last_name} reports {self.project.title} project "
+
+class CommentReport(models.Model):
+    reason = models.TextField()
+    user = models.ForeignKey(myUser, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comments, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} reports id = {self.comment.id} comment"
+

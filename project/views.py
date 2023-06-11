@@ -101,18 +101,21 @@ class ProjectDetails(APIView):
         project = Project.objects.filter(id=id).first()
         images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
         projectComments = Comments.objects.filter(project = project)
-        comments = CommentSerializer(projectComments, many=True).data
         projectTags = Tag.objects.filter(project = project)
+        projectReports = ProjectReport.objects.filter(project=id)
+        comments = CommentSerializer(projectComments, many=True).data
         tags = TagSerializer(projectTags, many=True).data
+        reports = ReportProjectSerializer(projectReports, many=True).data
         if project:
             serializer = ProjectSerializer(project)
             ProjectDetails = serializer.data
             ProjectDetails['pictures'] = images
             ProjectDetails['comments'] = comments
             ProjectDetails['tags'] = tags
+            ProjectDetails['reports'] = reports
             return Response({"success": True, "data": ProjectDetails, "message": "project data is retrieved"})
         else:
-            return Response({"success": False, "message": "projectnot found"})
+            return Response({"success": False, "message": "projectnot found"}, status=status.HTTP_400_BAD_REQUEST )
 
 
     def delete(self, request, id):
@@ -146,7 +149,7 @@ class ProjectComments(APIView):
             else:
                 return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"success": False, "message": "projectnot found"})
+            return Response({"success": False, "message": "project not found"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, id):
         user = isLogin(request)
@@ -214,7 +217,7 @@ class CategoryProjects(APIView):
             serialized_data['project'] = projectSerializer.data
             return Response({"success": True, "data": serialized_data,"message": "category data retrieved"})
         else:
-            return Response({"success": False, "message": "category not found"})
+            return Response({"success": False, "message": "category not found"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LastFiveProjects(APIView):
@@ -233,3 +236,60 @@ class LastFiveProjects(APIView):
         for i, project_data in enumerate(serializer_data):
             project_data['pictures'] = images_list[i]
         return Response({"success": True, "data": serializer_data, "message": "Last 5 Projects are retrieved"})
+
+
+class ReportProject(APIView):
+    def post(self, request, id):
+        user = isLogin(request)
+        project = Project.objects.filter(id=id).first()
+        if not project:
+            return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        report_data = request.data.copy()
+        report_data['user'] = user.id
+        report_data['project'] = id
+        serializer = AddReportProjectSerializer(data= report_data)
+        if serializer.is_valid(raise_exception=False):
+            serializer.save()
+            return Response({"success": True,"message": "Report Send Successfully","date": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, id):
+        user = isLogin(request)
+
+        project = ProjectReport.objects.filter(project=id)
+        if not project:
+            return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ReportProjectSerializer(project, many=True)
+        return Response({"success": True, "data": serializer.data, "message": "project reports"})
+
+
+class ReportComment(APIView):
+    def post(self, request, *args, **kwargs):
+        user = isLogin(request)
+        projectId = kwargs['projectId']
+        commentId = kwargs['id']
+        comment = Comments.objects.filter(id=commentId, project= projectId).first()
+        if not comment:
+            return Response({"success": False, "message": "comment not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        report_data = request.data.copy()
+        report_data['user'] = user.id
+        report_data['comment'] = commentId
+        serializer = AddReportCommentSerializer(data= report_data)
+        if serializer.is_valid(raise_exception=False):
+            serializer.save()
+            return Response({"success": True,"message": "Report Send Successfully","date": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request,  *args, **kwargs):
+        user = isLogin(request)
+        projectId = kwargs['projectId']
+        commentId = kwargs['id']
+        projectComments = CommentReport.objects.filter(comment = commentId)
+        if not projectComments:
+            return Response({"success": False, "message": "comment not found"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ReportCommentSerializer(projectComments, many=True)
+        return Response({"success": True, "data": serializer.data, "message": "project reports"})
