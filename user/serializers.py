@@ -27,7 +27,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'read_only': True},
         }
-        
+
 
 class EmailVerificationSerializer(serializers.ModelSerializer):
     token = serializers.CharField(max_length=555)
@@ -43,6 +43,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields=['email','password']
 
 
+class ProjectReportSerializer(serializers.ModelSerializer):
+     class Meta:
+        model=myUser
+        fields=['email','password']
 
 
 
