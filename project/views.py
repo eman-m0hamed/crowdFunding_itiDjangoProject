@@ -82,17 +82,10 @@ class ProjectsView(APIView):
             images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
             images_list.append(images)
 
-        # add the list of image URLs to the serializer data
         serializer_data = serializer.data
         for i, project_data in enumerate(serializer_data):
             project_data['pictures'] = images_list[i]
         return Response({"success": True, "data": serializer_data, "message": "All Your Projects are retrieved"})
-
-
-
-class ProjectListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
 
 
 class ProjectDetails(APIView):
@@ -199,6 +192,7 @@ class DonationsView(APIView):
         else:
             return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -213,9 +207,18 @@ class CategoryProjects(APIView):
             categorySerializer = CategorySerializer(category)
             categoryProjects = Project.objects.filter(category=category)
             projectSerializer = ProjectSerializer(categoryProjects, many=True)
-            serialized_data = categorySerializer.data
-            serialized_data['project'] = projectSerializer.data
-            return Response({"success": True, "data": serialized_data,"message": "category data retrieved"})
+            images_list = []
+            for project in categoryProjects:
+                images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
+                images_list.append(images)
+
+            projects_data = projectSerializer.data
+            for i, project in enumerate(projects_data):
+                project['pictures'] = images_list[i]
+
+            category_data = categorySerializer.data
+            category_data['project'] = projectSerializer.data
+            return Response({"success": True, "data": category_data,"message": "category data retrieved"})
         else:
             return Response({"success": False, "message": "category not found"}, status=status.HTTP_400_BAD_REQUEST)
 

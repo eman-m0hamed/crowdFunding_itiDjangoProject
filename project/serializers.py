@@ -60,7 +60,7 @@ class CommentSerializer(serializers.ModelSerializer):
     reports = ReportCommentSerializer(read_only=True, allow_null=True)
     class Meta:
         model = Comments
-        fields = ['id', 'project', 'user', 'reports']
+        fields = ['id', 'project', 'user', 'comment', 'reports']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -78,7 +78,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class AddProjectSerialzer(serializers.ModelSerializer):
-    pictures = ProjectPictureSerializer(many=True, read_only=True)
+    pictures = ProjectPictureSerializer(many=True, read_only=True, allow_null=True)
     tags = TagSerializer(many=True, read_only=True, allow_null=True)
 
     class Meta:
