@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.text import slugify
 from PIL import Image
 from user.models import myUser
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=50)
@@ -20,6 +22,8 @@ class Project(models.Model):
     end_time = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     donation=models.IntegerField(default=0)
+    averageRate = models.IntegerField(default=0)
+    is_selected_by_admin = models.BooleanField(default=0)
 
     def __str__(self):
         return self.title
@@ -74,4 +78,12 @@ class CommentReport(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} reports id = {self.comment.id} comment"
+
+class ProjectRate(models.Model):
+    rate = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    user = models.ForeignKey(myUser, on_delete=models.CASCADE)
+    project = models.ForeignKey(Comments, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} rate id = {self.comment.id} project with rate {self.rate}"
 

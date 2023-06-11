@@ -29,6 +29,9 @@ urlpatterns = [
     path('lastFiveProjects/', views.LastFiveProjects.as_view(), name='last-five-projects'),
     path('<int:id>/reports/', views.ReportProject.as_view(), name='project-report'),
     path('<int:projectId>/comments/<int:id>/reports/', views.ReportComment.as_view(), name='comment-report'),
+    path('<int:id>/rates/', views.RateProject.as_view(), name='project-rate'),
+    path('HighestFiveRated/', views.HighestFiveRated.as_view(), name='highest-five-rated-projects'),
+    path('lastFiveProjectSelectedByAdmin/', views.lastFiveProjectSelectedByAdmin.as_view(), name='highest-five-rated-projects'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

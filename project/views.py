@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from user.models import *
 from user.views import isLogin
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 from django.utils import timezone
 
 
@@ -293,3 +293,64 @@ class ReportComment(APIView):
             return Response({"success": False, "message": "comment not found"}, status=status.HTTP_400_BAD_REQUEST)
         serializer = ReportCommentSerializer(projectComments, many=True)
         return Response({"success": True, "data": serializer.data, "message": "project reports"})
+
+
+
+class RateProject(APIView):
+    def post(self, request, id):
+        user = isLogin(request)
+        project = Project.objects.filter(id=id).first()
+        if not project:
+            return Response({"success": False, "message": "Project not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        rate_data = request.data.copy()
+        rate_data['user'] = user.id
+        rate_data['project'] = id
+        serializer = AddProjectRateSerializer(data= rate_data)
+        if serializer.is_valid(raise_exception=False):
+            project_rates = ProjectRate.objects.filter(project=project)
+            overall_rate = project_rates.aggregate(Avg('rate'))['rate__avg']
+            project.averageRate = overall_rate + int(rate_data['rate'])
+            serializer.save()
+            project.save()
+            return Response({"success": True,"message": "rate done Successfully","date": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class  HighestFiveRated(APIView):
+    def get(self, request):
+        user= isLogin(request)
+
+        projects= Project.objects.all().order_by('averageRate')[:5]
+        serializer = ProjectSerializer(projects, many=True);
+        images_list = []
+        for project in projects:
+            images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
+            images_list.append(images)
+
+        # add the list of image URLs to the serializer data
+        serializer_data = serializer.data
+        for i, project_data in enumerate(serializer_data):
+            project_data['pictures'] = images_list[i]
+        return Response({"success": True, "data": serializer_data, "message": "Last 5 Projects are retrieved"})
+
+
+class  lastFiveProjectSelectedByAdmin(APIView):
+    def get(self, request):
+        user= isLogin(request)
+
+        projects= Project.objects.filter(is_selected_by_admin=True).reverse()[:5]
+        serializer = ProjectSerializer(projects, many=True);
+        images_list = []
+        for project in projects:
+            images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
+            images_list.append(images)
+
+        # add the list of image URLs to the serializer data
+        serializer_data = serializer.data
+        for i, project_data in enumerate(serializer_data):
+            project_data['pictures'] = images_list[i]
+        return Response({"success": True, "data": serializer_data, "message": "Last 5 Projects selected by admin are retrieved"})
+

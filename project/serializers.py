@@ -74,7 +74,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'user', 'title', 'details', 'tags', 'category', 'total_target', 'pictures', 'start_time', 'end_time', 'comments' ,'donation', 'reports']
+        fields = ['id', 'user', 'title', 'details', 'tags', 'category', 'total_target', 'pictures', 'start_time', 'end_time', 'comments' ,'donation', 'reports', 'averageRate']
 
 
 class AddProjectSerialzer(serializers.ModelSerializer):
@@ -107,5 +107,17 @@ class CategoryListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'project']
 
 
+class AddProjectRateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectRate
+        fields = "__all__"
+
+
+class ProjectRateSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    project = ProjectSerializer()
+    class Meta:
+        model = Donations
+        fields = "__all__"
 
 
