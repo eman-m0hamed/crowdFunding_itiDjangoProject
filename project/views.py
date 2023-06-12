@@ -15,7 +15,7 @@ def add_project_images(request, images, project):
     for image in images:
         data = ({ "project": project.id,"image": image })
         serializer = ProjectPictureSerializer(data=data)
-        if serializer.is_valid(raise_exception=False):
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
             return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -28,12 +28,14 @@ def add_project_tags(request, tags, project):
     print(tags)
     for tag in tags:
         data = ({
-            "project": project,
-            "tag": tag,
+            "project": project.id,
+            "name": tag,
         })
+
         serializer = TagSerializer(data=data)
-        if serializer.is_valid(raise_exception=False):
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
+            print(data)
         else:
             return Response({"success": False,"errors": serializer.errors}, status=status.HTTP_404_NOT_FOUND)
     else:
