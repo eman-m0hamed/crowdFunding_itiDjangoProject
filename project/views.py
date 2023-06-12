@@ -224,9 +224,17 @@ class CategoryProjects(APIView):
                 images_list.append(images)
 
             projects_data = projectSerializer.data
-            for i, project in enumerate(projects_data):
-                project['pictures'] = images_list[i]
-
+            for i, oneProject in enumerate(projects_data):
+                oneProject['pictures'] = images_list[i]
+                projectComments = Comments.objects.filter(project = oneProject['id'])
+                projectTags = Tag.objects.filter(project = oneProject['id'])
+                projectReports = ProjectReport.objects.filter(project=oneProject['id'])
+                comments = CommentSerializer(projectComments, many=True).data
+                tags = TagSerializer(projectTags, many=True).data
+                reports = ReportProjectSerializer(projectReports, many=True).data
+                oneProject['comments'] =comments
+                oneProject['tags'] = tags
+                oneProject['reports'] = reports
             category_data = categorySerializer.data
             category_data['project'] = projectSerializer.data
             return Response({"success": True, "data": category_data,"message": "category data retrieved"})
