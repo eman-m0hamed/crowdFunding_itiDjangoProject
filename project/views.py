@@ -309,6 +309,14 @@ class ReportComment(APIView):
         return Response({"success": True, "data": serializer.data, "message": "project reports"})
 
 
+class TagsView(APIView):
+    def get(self, request):
+        user = isLogin(request)
+        allTags = Tag.objects.all()
+        serializer = TagSerializer(allTags, many=True)
+        return Response ({"success": True, "data": serializer.data, "message": "all tags are retrieved"}, status=status.HTTP_200_OK)
+
+
 
 class RateProject(APIView):
     def post(self, request, id):

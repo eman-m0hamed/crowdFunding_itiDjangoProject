@@ -32,6 +32,7 @@ urlpatterns = [
     path('<int:id>/rates/', views.RateProject.as_view(), name='project-rate'),
     path('HighestFiveRated/', views.HighestFiveRated.as_view(), name='highest-five-rated-projects'),
     path('lastFiveProjectSelectedByAdmin/', views.lastFiveProjectSelectedByAdmin.as_view(), name='highest-five-rated-projects'),
+    path('tags/', views.TagsView.as_view(), name='projects-tags'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
