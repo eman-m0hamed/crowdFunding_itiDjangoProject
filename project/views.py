@@ -176,6 +176,8 @@ class DonationsView(APIView):
             donation_data['project']=id
             serializer = AddDonationSerializer(data=donation_data)
             if serializer.is_valid(raise_exception=False):
+                if request.data['money'] > project.total_target:
+                    return Response ({"success": False, "message": "can't donate money more that the total target"}, status=status.HTTP_400_BAD_REQUEST)
                 allDonations = Donations.objects.filter(project=id).aggregate(Sum('money'))['money__sum'] or 0
                 if allDonations >= project.total_target or timezone.now() > project.end_time:
                     return Response({"success": False,"message": "project already arrived to its target"}, status=status.HTTP_400_BAD_REQUEST)
@@ -340,11 +342,8 @@ class RateProject(APIView):
         if serializer.is_valid(raise_exception=False):
             serializer.save()
             project_rates = ProjectRate.objects.filter(project=project)
-            if not project_rates:
-                project.averageRate = rate_data['rate']
-            else:
-                overall_rate = project_rates.aggregate(Avg('rate'))['rate__avg']
-                project.averageRate = overall_rate
+            overall_rate = project_rates.aggregate(Avg('rate'))['rate__avg'] or 0
+            project.averageRate = overall_rate
             project.save()
             return Response({"success": True,"message": "rate done Successfully","date": serializer.data}, status=status.HTTP_200_OK)
         else:
