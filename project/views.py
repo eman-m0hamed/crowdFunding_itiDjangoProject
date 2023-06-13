@@ -103,6 +103,9 @@ class ProjectDetails(APIView):
     def get(self, request, id):
         user = isLogin(request)
         project = Project.objects.filter(id=id).first()
+        if not  project:
+            return Response({"success": False, "message": "project not found"}, status=status.HTTP_400_BAD_REQUEST )
+
         images = [request.build_absolute_uri(image.image.url) for image in project.project_pictures.all()]
         projectComments = Comments.objects.filter(project = project)
         projectTags = Tag.objects.filter(project = project)
@@ -110,16 +113,22 @@ class ProjectDetails(APIView):
         comments = CommentSerializer(projectComments, many=True).data
         tags = TagSerializer(projectTags, many=True).data
         reports = ReportProjectSerializer(projectReports, many=True).data
-        if project:
-            serializer = ProjectSerializer(project)
-            ProjectDetails = serializer.data
-            ProjectDetails['pictures'] = images
-            ProjectDetails['comments'] = comments
-            ProjectDetails['tags'] = tags
-            ProjectDetails['reports'] = reports
-            return Response({"success": True, "data": ProjectDetails, "message": "project data is retrieved"})
+
+        projectRate = ProjectRate.objects.filter(user=user.id, project = id).first()
+        if projectRate:
+            userRateSelializer = AddProjectRateSerializer(projectRate)
+            userRate = userRateSelializer.data['rate']
         else:
-            return Response({"success": False, "message": "projectnot found"}, status=status.HTTP_400_BAD_REQUEST )
+            userRate = 0
+
+        serializer = ProjectSerializer(project)
+        ProjectDetails = serializer.data
+        ProjectDetails['pictures'] = images
+        ProjectDetails['comments'] = comments
+        ProjectDetails['tags'] = tags
+        ProjectDetails['reports'] = reports
+        ProjectDetails['user_rate'] = userRate
+        return Response({"success": True, "data": ProjectDetails, "message": "project data is retrieved"})
 
 
     def delete(self, request, id):
@@ -338,7 +347,12 @@ class RateProject(APIView):
         rate_data = request.data.copy()
         rate_data['user'] = user.id
         rate_data['project'] = id
-        serializer = AddProjectRateSerializer(data= rate_data)
+
+        existUserRate = ProjectRate.objects.filter(user=user.id, project=id).first()
+        if existUserRate:
+            serializer = AddProjectRateSerializer(data=rate_data, instance= existUserRate)
+        else:
+            serializer = AddProjectRateSerializer(data= rate_data)
         if serializer.is_valid(raise_exception=False):
             serializer.save()
             project_rates = ProjectRate.objects.filter(project=project)

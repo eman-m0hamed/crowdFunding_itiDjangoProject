@@ -113,11 +113,11 @@ class AddProjectRateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProjectRateSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    project = ProjectSerializer()
-    class Meta:
-        model = Donations
-        fields = "__all__"
+# class ProjectRateSerializer(serializers.ModelSerializer):
+#     user = UserSerializer()
+#     project = ProjectSerializer()
+#     class Meta:
+#         model = ProjectRate
+#         fields = "__all__"
 
 
