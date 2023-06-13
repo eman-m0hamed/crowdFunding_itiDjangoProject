@@ -82,7 +82,7 @@ class CommentReport(models.Model):
 class ProjectRate(models.Model):
     rate = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     user = models.ForeignKey(myUser, on_delete=models.CASCADE)
-    project = models.ForeignKey(Comments, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} rate id = {self.comment.id} project with rate {self.rate}"

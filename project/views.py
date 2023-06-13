@@ -338,10 +338,13 @@ class RateProject(APIView):
         rate_data['project'] = id
         serializer = AddProjectRateSerializer(data= rate_data)
         if serializer.is_valid(raise_exception=False):
-            project_rates = ProjectRate.objects.filter(project=project)
-            overall_rate = project_rates.aggregate(Avg('rate'))['rate__avg']
-            project.averageRate = overall_rate + int(rate_data['rate'])
             serializer.save()
+            project_rates = ProjectRate.objects.filter(project=project)
+            if not project_rates:
+                project.averageRate = rate_data['rate']
+            else:
+                overall_rate = project_rates.aggregate(Avg('rate'))['rate__avg']
+                project.averageRate = overall_rate
             project.save()
             return Response({"success": True,"message": "rate done Successfully","date": serializer.data}, status=status.HTTP_200_OK)
         else:
