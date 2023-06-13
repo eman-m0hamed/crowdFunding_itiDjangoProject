@@ -55,7 +55,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',  
+    'http://localhost:4200',
 ]
 
 ROOT_URLCONF = 'crowdFunding.urls'
@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'crowdFunding.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'database.sqlite3',
     }
 }
 

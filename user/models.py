@@ -24,8 +24,6 @@ class myUser(AbstractBaseUser):
     profile_picture = models.ImageField(upload_to='profile_pictures', null=True)
     is_active = models.BooleanField(default=True)
     is_verifications = models.BooleanField(default=False)
-    is_authenticated = models.BooleanField(null=True)
-    auth_provider = models.CharField(max_length=255,blank=False,null=False,default='email')
     country = models.CharField(max_length=30, null=True, blank=True)
     Birth_date = models.DateField(null=True, blank=True)
 
