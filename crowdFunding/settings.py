@@ -134,9 +134,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # sending email setting
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "fighters5134@gmail.com"
-EMAIL_HOST_PASSWORD = "leaywnjssmdsyyxf"
+EMAIL_PORT = 465
+EMAIL_HOST_USER = "ma3920457@gmail.com"
+EMAIL_HOST_PASSWORD = "fkjfunbftuzgyndv"
 
 # media direction
 MEDIA_URL = '/media/'
